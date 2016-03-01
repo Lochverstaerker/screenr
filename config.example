@@ -1,0 +1,62 @@
+##### screenr configuration file #####
+### https://github.com/Lochverstaerker/screenr ###
+
+
+## Directories
+
+# Path to save images to
+image_dir="$HOME/Pictures/Screenshots"
+
+# Path to dropbox directory to be used
+db_dir="$HOME/Dropbox/Public/Screenshots"
+
+# Path to logfile (only used, when logging is used)
+log_file="$HOME/Pictures/Screenshots/log"
+
+
+## Programs
+
+# Web browser to open uploaded images with
+# "xdg-open" for default/favorite browser
+# Leave blank or comment to disable automatic opening of URLs
+browser="xdg-open"
+
+# Image manipulation program
+img_prg="pinta"
+
+# Image viewser
+img_view="feh -F"
+
+
+## Formatting options
+
+# Formatting of the date used in image name when saved
+# Should be precise enough to be unique
+# man date for help on FORMAT
+date_format="+%F-%T"
+
+# Image format
+img_format="png"
+
+
+## Options
+
+# Whether or not URLs of uploaded images
+# (and their delete pages in case of imgur) get logged
+# 0 is off, anything else is on
+logging=0
+
+# Whether or not URLs of upload get copies into the clipboard
+# 0 is off, anything else is on
+# Requires xsel or sclip
+clipping=1
+
+# Whether or not to wait until a file is synced before opening it
+# in the web browser, when uploading to dropbox
+# 0 is off, anything else is on
+db_waiting=1
+
+# Frequency at which to check if file is already snyced, when using db_waiting
+# Low values require (slightly) more CPU usage, but usually perform better
+# If you use too much CPU with this script, disable db_waiting or increase check_interval
+check_interval=0.1

@@ -1,47 +1,18 @@
 #!/bin/bash
 
-# This script takes a screenshot using maim (+ slop) and then prompts the user what to do with it using rofi.
-# Available options are "Save", "Upload" (to imgur and dropbox), "Edit", "Save & Upload" and "View"
-# Available flags are all the maim flags (not sure if all of them work though), except --help and -V (--version), which are handled by this script.
+# Visit https://github.com/Lochverstaerker/screenr for more information
 
-### CONFIGURATION - Feel free to edit this ###
-#
-#Directory to save images to | must exist
-image_dir="$HOME/Pictures/Screenshots"
-#Dropbox directory to save images to | must exist
-db_dir="$HOME/Dropbox/Public/Screenshots"
-#Whether or not to wait until a file is uploaded, before opening it in web browser,
-#when using dropbox
-#0 for no, anything else is a yes
-db_waiting=1
-#frequency at which to check if file is already synced
-#high values need (slightly) more computational power but waiting time is (slightly) reduced
-#only in effect if db_waiting is not 0
-check_interval=0.1
-#Whether or not there is a log;
-#logs all images uploaded (with date) and if uploaded to imgur also includes 'Delete link'
-#0 for no, anything else is a yes
-logging=0
-#Path to logfile (logs URLs to images and to delete uploads); gets created if it does not exist and logging is enabled
-log_file="$HOME/Pictures/Screenshots/log"
-#Whether or not URL of upload gets clipped (copied into clipboard)
-#0 for no, anything else is a yes
-#requires xsel or xclip
-clipping=1
-#Formatting of date and image name; must be preciise enough to be unique
-date_format="+%F-%T"
-#Image format
-img_format="png"
-#Browser to open uploaded images with
-#"xdg-open" for default/favorite browser
-#leave blank or comment to not open uploads automatically in browser
-browser="xdg-open"
-#Image Manipulation Program
-img_prg="pinta"
-#Image Viewer
-img_view="feh -F"
-#
-### ###
+source /etc/screenr/screenr.conf
+
+if [[ ! -d $HOME/.config/screenr ]]; then
+    mkdir $HOME/.config/screenr
+fi
+
+if [[ ! -f $HOME/.config/screenr/config ]]; then
+    cp /etc/screenr/screenr.conf $HOME/.config/screenr/config
+fi
+
+source $HOME/.config/teiler/config
 
 function usage {
     cat << EOF
@@ -302,19 +273,22 @@ if [ -e /tmp/screenr/tmp_url -a "$clipping" -ne 0 ];then
         || { type xclip >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xclip -i; } \
         || echo "Can't copy into clipboard: no xsel or xclip" >&2
 fi
-#If logging is enabled this appends the necessary information to the log_file
+#If a screenshot was taken and
+#logging is enabled this appends the necessary information to the log_file
 #If not information is only output to STDOUT and STDERR
-if [[ "$logging" -ne 0 ]]; then
-    echo $(date "$date_format") >> "$log_file"
-    echo "$url_name" | tee -a "$log_file"
-    if [[ -e /tmp/screenr/tmp_url_del ]]; then
-        tee -a "$log_file" >&2 < /tmp/screenr/tmp_url_del
-    fi
-    echo >> "$log_file"
-else
-    echo "$url_name"
-    if [[ -e /tmp/screenr/tmp_url_del ]]; then
-        cat /tmp/screenr/tmp_url_del >&2
+if [[ ! -z "$url_name" ]]; then
+    if [[ "$logging" -ne 0 ]]; then
+        echo $(date "$date_format") >> "$log_file"
+        echo "$url_name" | tee -a "$log_file"
+        if [[ -e /tmp/screenr/tmp_url_del ]]; then
+            tee -a "$log_file" >&2 < /tmp/screenr/tmp_url_del
+        fi
+        echo >> "$log_file"
+    else
+        echo "$url_name"
+        if [[ -e /tmp/screenr/tmp_url_del ]]; then
+            cat /tmp/screenr/tmp_url_del >&2
+        fi
     fi
 fi
 cleanup
