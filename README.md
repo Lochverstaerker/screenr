@@ -44,5 +44,5 @@ screenr is directly configured inside the _screenr_ file. All available options 
 
 
 ##How to use
-Copy _screenr_ and make it executable. Move to _/usr/bin/_ for global use.
+Copy _screenr_ and make it executable. Move to _/usr/bin/_ for global use.  
 Check _screenr --help_ and optionally _maim --help_ for more help.
