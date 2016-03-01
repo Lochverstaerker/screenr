@@ -23,7 +23,7 @@ Performs both the *Save* and *Upload* action
 * *View*  
 Opens the image in an Image Viewer and returns to the menu after closing it
 
-* *Discard*/*ESC*  
+* *Discard/ESC*  
 Discards the image and all changes made to it
 
 
@@ -40,9 +40,10 @@ For full functionality:
 
 
 ##Configuration
-screenr is directly configured inside the _screenr_ file. All available options are initialized with default values and commented.
+The script reads it's configuration from _~/.config/screenr/config_  
+If the path does not exist an example config will be created there after running the script once. 
 
 
 ##How to use
-Copy _screenr_ and make it executable. Move to _/usr/bin/_ for global use.  
-Check _screenr --help_ and optionally _maim --help_ for more help.
+Download this repository and run ```make -f Makefile```  
+Check ```screenr --help``` for additional help
