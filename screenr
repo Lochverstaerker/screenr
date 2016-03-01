@@ -28,8 +28,10 @@ log_file="$HOME/Pictures/Screenshots/log"
 #0 for no, anything else is a yes
 #requires xsel or xclip
 clipping=1
-#Formatting of date and image name; must be precie enough to be unique and end in .png
-date_format='+%F-%T.png'
+#Formatting of date and image name; must be preciise enough to be unique
+date_format="+%F-%T"
+#Image format
+img_format="png"
 #Browser to open uploaded images with
 #"xdg-open" for default/favorite browser
 #leave blank or comment to not open uploads automatically in browser
@@ -119,7 +121,7 @@ function open_in_browser {
 function imgur_upload {
     if hash imgur 2>/dev/null; then
         imgur "$full_path" > /tmp/screenr/tmp_url 2> /tmp/screenr/tmp_url_del
-        url_name=$(cat /tmp/screenr/tmp_url | head -n 1)
+        url_name=$(head -n 1 < /tmp/screenr/tmp_url)
         notify-send -u normal "Image uploaded" "$url_name"
         open_in_browser
     else
@@ -132,14 +134,14 @@ function imgur_upload {
 function dropbox_upload {
     cp "$full_path" "$db_dir"
     printf "$db_dir/" >> "/tmp/screenr/db_path"; printf "$image_name" >> "/tmp/screenr/db_path"
-    db_path=$(cat /tmp/screenr/db_path)
+    db_path=$(</tmp/screenr/db_path)
     notify-send -u normal "Image copied into dropbox" "$image_name"
     if hash dropbox-cli 2>/dev/null; then
         dropbox-cli puburl "$db_path" > /tmp/screenr/tmp_url
-        if [[ $(cat /tmp/screenr/tmp_url  | grep "Error") ]]; then
+        if [[ $(grep "Error" < /tmp/screenr/tmp_url) ]]; then
             dropbox-cli sharelink "$db_path" > /tmp/screenr/tmp_url
         fi
-        url_name=$(cat /tmp/screenr/tmp_url)
+        url_name=$(</tmp/screenr/tmp_url)
         if [[ "$db_waiting" -ne 0 ]]; then
             while [[ $(dropbox-cli filestatus "$db_path" | grep "syncing") ]]; do
                 sleep "$check_interval"
@@ -176,13 +178,16 @@ function upload_menu {
 
 # Makes a screenshot with specified flags; if -s is provided and interrupted by a keyboard interrupt, this cancels the script
 function take_screenshot {
+    if [[ $selection_mode == "1" ]]; then
+        notify-send -t 1 -u low "Entered Screenshot Selection Mode"
+    fi
     maim "$@" "$full_path" 2> /tmp/screenr/maim_err
-    if [[ $(cat /tmp/screenr/maim_err | grep "Canceled selection") ]]; then
+    if [[ $(grep "Canceled selection" < /tmp/screenr/maim_err) ]]; then
         notify-send -t 1 -u low "Canceled"
         cleanup
         exit 0
     fi
-    if [[ $(cat /tmp/screenr/maim_err | grep "invalid") ]]; then
+    if [[ $(grep "invalid" < /tmp/screenr/maim_err) ]]; then
         cat /tmp/screenr/maim_err >&2
         echo "Maim encountered an error. Aborting" >&2
         exit 1
@@ -252,7 +257,7 @@ while test $# -gt 0; do
             exit 0
             ;;
         --format)
-            echo "$1 is currently unsupported. Skipping" >&2
+            echo "$1 is unsupported. Please choose your format in screenr's config file. Skipping" >&2
             shift
             ;;
         --upload)
@@ -277,13 +282,14 @@ while test $# -gt 0; do
     esac
 done
 mkdir "/tmp/screenr" #directory where temporary files will be created; removed at the end of the script during cleanup
-# If -s|--select flag is passed, this notifies the user that Screenshot Selection Mode has been entered
+image_name=$(date "$date_format")."$img_format" #Name of the image file
+full_path=/tmp/screenr/"$image_name" #Full path to the image file
+# If -s|--select flag is passed, this sets a flag that is used to
+# notify the user that Screenshot Selection Mode has been entered
+# and to add the option to "Retake" a screenshot
 if [[ $(echo "$@ " | grep -e '-s \|--select') ]]; then
     selection_mode=1
-    notify-send -t 1 -u low "Entered Screenshot Selection Mode"
 fi
-image_name=$(date "$date_format") #Name of the image file
-full_path=/tmp/screenr/"$image_name" #Full path to the image file
 take_screenshot "$@"
 # Acts on specified flags and if none were passed it goes to menu to let user decide manually
 if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
@@ -316,16 +322,16 @@ fi
 #If logging is enabled this appends the necessary information to the log_file
 #If not information is only output to STDOUT and STDERR
 if [[ "$logging" -ne 0 ]]; then
-    echo $(date "$date_format") | sed 's/.png//' >> "$log_file"
+    echo $(date "$date_format") >> "$log_file"
     echo "$url_name" | tee -a "$log_file"
     if [[ -e /tmp/screenr/tmp_url_del ]]; then
-        cat /tmp/screenr/tmp_url_del | tee -a "$log_file" >&2
+        tee -a "$log_file" >&2 < /tmp/screenr/tmp_url_del
     fi
     echo >> "$log_file"
 else
     echo "$url_name"
     if [[ -e /tmp/screenr/tmp_url_del ]]; then
-        cat /tmp/screenr/tmp_url_del | tee -a "$log_file" >&2
+        cat /tmp/screenr/tmp_url_del >&2
     fi
 fi
 cleanup
