@@ -7,40 +7,41 @@
 ### CONFIGURATION - Feel free to edit this ###
 #
 #Directory to save images to | must exist
-image_dir="$HOME/Pictures/Screenshots" 
+image_dir="$HOME/Pictures/Screenshots"
 #Dropbox directory to save images to | must exist
-db_dir="$HOME/Dropbox/Public/Screenshots" 
-#Whether or not there is a log; 
-#logs all images uploaded (with date) and if uploaded to imgur also includes 'Delete link' 
+db_dir="$HOME/Dropbox/Public/Screenshots"
+#Whether or not there is a log;
+#logs all images uploaded (with date) and if uploaded to imgur also includes 'Delete link'
 #0 for no, everything else is a yes
-logging=0 
+logging=0
 #Path to logfile (logs URLs to images and to delete uploads); gets created if it does not exist and logging is enabled
-log_file="$HOME/Pictures/Screenshots/log" 
-#Whether or not URL of upload gets clipped (copied into clipboard) 
+log_file="$HOME/Pictures/Screenshots/log"
+#Whether or not URL of upload gets clipped (copied into clipboard)
 #0 for no, everything else is a yes
 #requires xsel or xclip
 clipping=1
-#Formatting of date and image name; must end in .png
-date_format='+%F-%T.png' 
-#Browser to open uploaded images with 
-#"xdg-open" for default/favorite browser 
+#Formatting of date and image name; must be precie enough to be unique and end in .png
+date_format='+%F-%T.png'
+#Browser to open uploaded images with
+#"xdg-open" for default/favorite browser
 #leave blank or comment to not open uploads automatically in browser
-browser="xdg-open" 
+browser="xdg-open"
 #Image Manipulation Program
-img_prg="pinta" 
+img_prg="pinta"
 #Image Viewer
-img_view="feh -F" 
+img_view="feh -F"
 #
 ### ###
 
 # TODO:
 #       Re-add option to use scrot (to screen transparency of window)
 #       Add better formatting options
+#           For file name (not oncluding date; use maim -f)
 #           Append something to file name if image was edited (optionally)
 #           Add option to append image dimensions to file name (optionally)
 #       Flags
-#           Add flags to skip menu and get desired result immediately
-#           Add better flag handeling (filter out bogus flags before menu starts)
+#           Improve flags to skip menu and get desired result immediately
+#           Throw error on bogus flags
 #       (Start pinta in fullscreen) (If possible)
 #       Improve logging (How?)
 #       (Optionally) wait on dropbox filestatus and inform when file is up
@@ -49,18 +50,35 @@ img_view="feh -F"
 
 # Don't touch anything below, unless you know what you're doing
 function usage {
-    echo -e "\nDESCRIPTION:"
-    echo "This script takes a screenshot using maim (+ slop) and then prompts the user what to do with it using rofi."
-    echo 'Available options are "Save", "Upload" (to imgur or dropbox), "Edit", "Save & Upload" and "View"'
-    echo "To use this script you will need maim (+ slop) and rofi."
-    echo "(Optionally) you also need imgur (http://imgur.com/tools/imgurbash.sh) to upload images to http://imgur.com/, dropbox-cli (https://linux.dropbox.com/packages/dropbox.py) for added functionality when using dropbox (automatically open URLs and copy links into clipboard), a web browser, some kind of Image Manipulation Program and some kind of Image Viewer."
-    echo -e "\nUSAGE:"
-    echo "screenr [OPTIONS]"
-    echo "Be careful: At the moment all flags (except --help and -V/--version) will get passed on to maim."
-    echo -e "This list is incomplete, check 'man maim' for more options; most, if not all of them should work\n"
-    echo "    --help    :   Display this message and exit"
-    echo "-V, --version :   Output version information and exit"
-    echo "-s, --select  :   Interactively choose a window or rectangle with the mouse"
+    cat << EOF
+screenr - a rofi-driven screenshot tool
+
+https://github.com/Lochverstaerker/screenr
+
+Usage: screenr [options]
+
+screenr is a utility that takes screenshots using maim (+ slop)
+and then opens a rofi-driven interactive menu to let the user decide what to do with the screenshot.
+
+        --help                      Show this information and exit
+    -V, --version                   Show version information and exit
+Options
+        --upload UPLOADER           Skip the interactive menu and upload directly
+                                        to UPLOADER (imgur or dropbox).
+        --save                      Skip the interactive menu and save directly.
+Additional Options
+        All the maim (+ slop) Options, see maim --help or man maim for help
+
+Examples
+    $ # Screenshot a selection and open interactive menu
+    $ screenr -s
+
+    $ # Screenshot the screen and save it, without opening interactive menu
+    $ screenr --save
+
+    $ # Screenshot currently active window and upload it to imgur
+    $ screenr -i \$(xdotool getactivewindow) --upload imgur
+EOF
 }
 
 # Cleans up all the temporary files created during this script
@@ -122,17 +140,23 @@ function dropbox_upload {
 # Menu to decide about where to upload screenshot; ESC or back cancels and goes back to (the previous) menu
 # "$@" for added functionality to 'Retake' screenshots
 function upload_menu {
-    uploader=$(echo -e "Imgur\nDropbox\nBack" | rofi -dmenu -p "Where to upload? > ")
+    if [[ -z "$uploader" ]]; then #if ESC is pressed variable is not initialized
+        uploader="$uploader_"     #falls back to default value
+    fi
     if [[ $uploader == "Imgur" ]]; then
         imgur_upload
     fi
     if [[ $uploader == "Dropbox" ]]; then
         dropbox_upload
     fi
-    if [[ $uploader == "Back" || -z "$uploader" ]]; then
+    if [[ $uploader == "Back" ]]; then
         unset choice
         choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
         menu "$@"
+    fi
+    if [[ $uploader == "Exit" ]]; then
+        cleanup
+        exit 0
     fi
 }
 
@@ -144,6 +168,11 @@ function take_screenshot {
         cleanup
         exit 0
     fi
+    if [[ $(cat /tmp/screenr/maim_err | grep "invalid") ]]; then
+        cat /tmp/screenr/maim_err >&2
+        echo "Maim encountered an error. Aborting" >&2
+        exit 1
+    fi
 }
 
 # Menu to decide what to do
@@ -154,12 +183,15 @@ function menu {
         save
     fi
     if [[ $choice == "Upload" ]]; then
+        unset uploader
+        uploader=$(echo -e "Imgur\nDropbox\nBack" | rofi -dmenu -p "Where to upload? > ")
+        uploader_="Back" #default choice
         upload_menu "$@"
     fi
     if [[ $choice == "Edit" ]]; then
         if hash $(echo "$img_prg" | cut -f 1 -d " ") 2>/dev/null; then #cut to remove flags that may be passed with the program
             $img_prg "$full_path"
-        else 
+        else
             echo "Image Manipulation Program not found" >&2
         fi
         unset choice
@@ -168,6 +200,8 @@ function menu {
     fi
     if [[ $choice == "Save & Upload" ]]; then
         save
+        uploader=$(echo -e "Imgur\nDropbox\nExit" | rofi -dmenu -p "Where to upload? > ")
+        uploader_="Exit" #default choice
         upload_menu "$@"
     fi
     if [[ $choice == "View" ]]; then
@@ -181,7 +215,7 @@ function menu {
         menu "$@"
     fi
     if [[ $choice == "Retake" ]]; then
-        take_screenshot "$@" 
+        take_screenshot "$@"
         choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
         menu "$@"
     fi
@@ -200,11 +234,31 @@ while test $# -gt 0; do
             exit 0
             ;;
         -V|--version)
-            echo "screenr v0.2 - Last updated: 2016-03-01"
+            echo "screenr v0.3 - Last updated: 2016-03-01"
             exit 0
             ;;
+        --format)
+            echo "$1 is currently unsupported. Skipping" >&2
+            shift
+            ;;
+        --upload)
+            shift
+            if [[ ! -z "$upload_flag" ]]; then
+                echo "Specifying multiple uploaders in 1 command is currently unsupported. Ignoring $1" >&2
+            elif test $# -gt 0; then
+                upload_flag="$1"
+            else
+                echo "No uploader specified. Aborting" >&2
+                exit 1
+            fi
+            shift
+            ;;
+        --save)
+            save_flag=1
+            shift
+            ;;
         *)
-            break
+            shift
             ;;
     esac
 done
@@ -217,12 +271,28 @@ fi
 image_name=$(date "$date_format") #Name of the image file
 full_path=/tmp/screenr/"$image_name" #Full path to the image file
 take_screenshot "$@"
-if [[ "$selection_mode" -eq 1 ]]; then #if selection flag was passed, this displays additional option to 'Retake' screenshot
-    choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+# Acts on specified flags and if none were passed it goes to menu to let user decide manually
+if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
+    if [[ $save_flag == "1" ]]; then
+        save
+    fi
+    if [[ ! -z "$upload_flag" ]]; then
+        if [[ $upload_flag == "imgur" ]]; then
+            imgur_upload
+        elif [[ $upload_flag == "dropbox" ]]; then
+            dropbox_upload
+        else
+            echo "Unsupported/unknown uploader $upload_flag. Skipping upload" >&2
+        fi
+    fi
 else
-    choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+    if [[ "$selection_mode" -eq 1 ]]; then #if selection flag was passed, this displays additional option to 'Retake' screenshot
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+    else
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+    fi
+    menu "$@"
 fi
-menu "$@"
 #If the image was uploaded, this copies the url into xsel or xclip
 if [ -e /tmp/screenr/tmp_url -a "$clipping" -ne 0 ];then
     { type xsel >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xsel -i; } \
@@ -230,11 +300,19 @@ if [ -e /tmp/screenr/tmp_url -a "$clipping" -ne 0 ];then
         || echo "Can't copy into clipboard: no xsel or xclip" >&2
 fi
 #If logging is enabled this appends the necessary information to the log_file
+#If not information is only output to STDOUT and STDERR
 if [[ "$logging" -ne 0 ]]; then
     echo $(date "$date_format") | sed 's/.png//' >> "$log_file"
-    echo "$url_name" >> "$log_file"
-    cat /tmp/screenr/tmp_url_del >> "$log_file"
+    echo "$url_name" | tee -a "$log_file"
+    if [[ -e /tmp/screenr/tmp_url_del ]]; then
+        cat /tmp/screenr/tmp_url_del | tee -a "$log_file" >&2
+    fi
     echo >> "$log_file"
+else
+    echo "$url_name"
+    if [[ -e /tmp/screenr/tmp_url_del ]]; then
+        cat /tmp/screenr/tmp_url_del | tee -a "$log_file" >&2
+    fi
 fi
 cleanup
 exit 0
