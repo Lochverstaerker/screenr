@@ -10,14 +10,22 @@
 image_dir="$HOME/Pictures/Screenshots"
 #Dropbox directory to save images to | must exist
 db_dir="$HOME/Dropbox/Public/Screenshots"
+#Whether or not to wait until a file is uploaded, before opening it in web browser,
+#when using dropbox
+#0 for no, anything else is a yes
+db_waiting=1
+#frequency at which to check if file is already synced
+#high values need (slightly) more computational power but waiting time is (slightly) reduced
+#only in effect if db_waiting is not 0
+check_interval=0.1
 #Whether or not there is a log;
 #logs all images uploaded (with date) and if uploaded to imgur also includes 'Delete link'
-#0 for no, everything else is a yes
+#0 for no, anything else is a yes
 logging=0
 #Path to logfile (logs URLs to images and to delete uploads); gets created if it does not exist and logging is enabled
 log_file="$HOME/Pictures/Screenshots/log"
 #Whether or not URL of upload gets clipped (copied into clipboard)
-#0 for no, everything else is a yes
+#0 for no, anything else is a yes
 #requires xsel or xclip
 clipping=1
 #Formatting of date and image name; must be precie enough to be unique and end in .png
@@ -49,6 +57,7 @@ img_view="feh -F"
 #       (Distinguish between dropbox and imgur in the configuration)
 
 # Don't touch anything below, unless you know what you're doing
+
 function usage {
     cat << EOF
 screenr - a rofi-driven screenshot tool
@@ -60,14 +69,14 @@ Usage: screenr [options]
 screenr is a utility that takes screenshots using maim (+ slop)
 and then opens a rofi-driven interactive menu to let the user decide what to do with the screenshot.
 
-        --help                      Show this information and exit
+    -h, --help                      Show this information and exit
     -V, --version                   Show version information and exit
 Options
         --upload UPLOADER           Skip the interactive menu and upload directly
                                         to UPLOADER (imgur or dropbox).
         --save                      Skip the interactive menu and save directly.
 Additional Options
-        All the maim (+ slop) Options, see maim --help or man maim for help
+        (Almost) all the maim (+ slop) Options, see maim --help or man maim for help
 
 Examples
     $ # Screenshot a selection and open interactive menu
@@ -127,11 +136,16 @@ function dropbox_upload {
     notify-send -u normal "Image copied into dropbox" "$image_name"
     if hash dropbox-cli 2>/dev/null; then
         dropbox-cli puburl "$db_path" > /tmp/screenr/tmp_url
-        if [[ $( $(cat /tmp/screenr/tmp_url) | grep "Error") ]]; then
+        if [[ $(cat /tmp/screenr/tmp_url  | grep "Error") ]]; then
             dropbox-cli sharelink "$db_path" > /tmp/screenr/tmp_url
         fi
         url_name=$(cat /tmp/screenr/tmp_url)
-        open_in_browser
+        if [[ "$db_waiting" -ne 0 ]]; then
+            while [[ $(dropbox-cli filestatus "$db_path" | grep "syncing") ]]; do
+                sleep "$check_interval"
+            done
+        fi
+            open_in_browser
     else
         echo "Can't make use of additional dropbox related functionality, because the necessary script can't be found" >&2
     fi
@@ -229,7 +243,7 @@ function menu {
 # Checks for certain flags that are handled by the script itself and not by maim
 while test $# -gt 0; do
     case "$1" in
-        --help)
+        -h|--help)
             usage
             exit 0
             ;;
