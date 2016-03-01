@@ -12,25 +12,26 @@ image_dir="$HOME/Pictures/Screenshots"
 db_dir="$HOME/Dropbox/Public/Screenshots" 
 #Whether or not there is a log; 
 #logs all images uploaded (with date) and if uploaded to imgur also includes 'Delete link' 
-# 0 for no, everything else is a yes
-logging=1 
-#Path to logfile (logs URLs to images and to delete uploads); gets created if it does not exist
+#0 for no, everything else is a yes
+logging=0 
+#Path to logfile (logs URLs to images and to delete uploads); gets created if it does not exist and logging is enabled
 log_file="$HOME/Pictures/Screenshots/log" 
 #Whether or not URL of upload gets clipped (copied into clipboard) 
-# 0 for no, everything else is a yes
+#0 for no, everything else is a yes
+#requires xsel or xclip
 clipping=1
 #Formatting of date and image name; must end in .png
 date_format='+%F-%T.png' 
 #Browser to open uploaded images with 
-# "xdg-open" for default/favorite browser 
-# leave blank or comment to not open uploads automatically in browser
+#"xdg-open" for default/favorite browser 
+#leave blank or comment to not open uploads automatically in browser
 browser="xdg-open" 
 #Image Manipulation Program
 img_prg="pinta" 
 #Image Viewer
 img_view="feh -F" 
 #
-###
+### ###
 
 # TODO:
 #       Readd option to use scrot (to screen transparency of window)
