@@ -207,7 +207,8 @@ while test $# -gt 0; do
             exit 0
             ;;
         -V|--version)
-            echo "screenr v0.3 - Last updated: 2016-03-01"
+            echo "screenr v1.0 - Last updated: 2016-03-01"
+            echo "https://github.com/Lochverstaerker/screenr"
             exit 0
             ;;
         --format)
