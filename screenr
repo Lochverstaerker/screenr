@@ -34,7 +34,7 @@ img_view="feh -F"
 ### ###
 
 # TODO:
-#       Readd option to use scrot (to screen transparency of window)
+#       Re-add option to use scrot (to screen transparency of window)
 #       Add better formatting options
 #           Append something to file name if image was edited (optionally)
 #           Add option to append image dimensions to file name (optionally)
@@ -119,7 +119,7 @@ function dropbox_upload {
     fi
 }
 
-# Menu to decide about where to upload screenshot; ESC or back cancels and goes back to menu
+# Menu to decide about where to upload screenshot; ESC or back cancels and goes back to (the previous) menu
 # "$@" for added functionality to 'Retake' screenshots
 function upload_menu {
     uploader=$(echo -e "Imgur\nDropbox\nBack" | rofi -dmenu -p "Where to upload? > ")
@@ -136,7 +136,7 @@ function upload_menu {
     fi
 }
 
-# Makes a screenshot with specified flags; if -s is provided and interrupted by a keyboard itnerrupt, this cancels the script
+# Makes a screenshot with specified flags; if -s is provided and interrupted by a keyboard interrupt, this cancels the script
 function take_screenshot {
     maim "$@" "$full_path" 2> /tmp/screenr/maim_err
     if [[ $(cat /tmp/screenr/maim_err | grep "Canceled selection") ]]; then
