@@ -36,7 +36,7 @@ img_view="feh -F"
 # TODO:
 #       Re-add option to use scrot (to screen transparency of window)
 #       Add better formatting options
-#           For file name (not oncluding date; use maim -f)
+#           For file name (not including date; use maim -f)
 #           Append something to file name if image was edited (optionally)
 #           Add option to append image dimensions to file name (optionally)
 #       Flags
