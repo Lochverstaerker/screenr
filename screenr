@@ -272,7 +272,7 @@ while test $# -gt 0; do
             shift
             ;;
         *)
-            shift
+            break
             ;;
     esac
 done
