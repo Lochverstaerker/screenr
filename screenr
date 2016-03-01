@@ -15,7 +15,7 @@ db_dir="$HOME/Dropbox/Public/Screenshots"
 # 0 for no, everything else is a yes
 logging=1 
 #Path to logfile (logs URLs to images and to delete uploads); gets created if it does not exist
-log_file="$HOME/Pictures/Screenshots/imgurlog" 
+log_file="$HOME/Pictures/Screenshots/log" 
 #Whether or not URL of upload gets clipped (copied into clipboard) 
 # 0 for no, everything else is a yes
 clipping=1
