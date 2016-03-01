@@ -12,7 +12,7 @@ if [[ ! -f $HOME/.config/screenr/config ]]; then
     cp /etc/screenr/screenr.conf $HOME/.config/screenr/config
 fi
 
-source $HOME/.config/teiler/config
+source $HOME/.config/screenr/config
 
 function usage {
     cat << EOF
