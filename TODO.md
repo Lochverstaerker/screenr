@@ -11,3 +11,4 @@
 * Check if all necessary directories exist before running the script
 * (Distinguish between dropbox and imgur in the configuration)
 * Get rid of temporary files, if possible
+* Add ability to configure rofi separately for this script
