@@ -43,23 +43,6 @@ img_view="feh -F"
 #
 ### ###
 
-# TODO:
-#       Re-add option to use scrot (to screen transparency of window)
-#       Add better formatting options
-#           For file name (not including date; use maim -f)
-#           Append something to file name if image was edited (optionally)
-#           Add option to append image dimensions to file name (optionally)
-#       Flags
-#           Improve flags to skip menu and get desired result immediately
-#           Throw error on bogus flags
-#       (Start pinta in fullscreen) (If possible)
-#       Improve logging (How?)
-#       (Optionally) wait on dropbox filestatus and inform when file is up
-#       Check if necessary/specified directories exist
-#       (Distinguish between dropbox and imgur in the configuration)
-
-# Don't touch anything below, unless you know what you're doing
-
 function usage {
     cat << EOF
 screenr - a rofi-driven screenshot tool
