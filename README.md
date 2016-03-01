@@ -1,7 +1,7 @@
 # screenr
 bash script to improve the taking of screenshots
 
-This script takes a screenshot using maim (+ slop) and then asks the user what to do with it using rofi.  
+This script takes a screenshot using maim (+ slop) and then asks the user what to do with it using rofi 
 Available options are "Save", "Upload" (to imgur and dropbox), "Edit", "Save & Upload" and "View"
 
 
@@ -41,7 +41,7 @@ For full functionality:
 
 ##Configuration
 The script reads it's configuration from _~/.config/screenr/config_  
-If the path does not exist an example config will be created there after running the script once. 
+If the path does not exist an example config will be created there after running the script once 
 
 
 ##How to use
