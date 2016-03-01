@@ -1,7 +1,7 @@
 # screenr
 bash script to improve the taking of screenshots
 
-This script takes a screenshot using maim (+ slop) and then prompts the user what to do with it using rofi.  
+This script takes a screenshot using maim (+ slop) and then asks the user what to do with it using rofi.  
 Available options are "Save", "Upload" (to imgur and dropbox), "Edit", "Save & Upload" and "View"
 
 
@@ -44,4 +44,5 @@ screenr is directly configured inside the _screenr_ file. All available options 
 
 
 ##How to use
-Copy _screenr_ and make it executable. Move to _/usr/bin/_ or _/bin/_ for global use.
+Copy _screenr_ and make it executable. Move to _/usr/bin/_ for global use.
+Check _screenr --help_ and optionally _maim --help_ for more help.
