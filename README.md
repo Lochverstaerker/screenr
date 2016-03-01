@@ -45,5 +45,5 @@ If the path does not exist an example config will be created there after running
 
 
 ##How to use
-Download this repository and run ```make -f Makefile```  
+Download this repository and run ```sudo make -f Makefile```  
 Check ```screenr --help``` for additional help
