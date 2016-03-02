@@ -20,10 +20,10 @@ screenr - a rofi-driven screenshot tool
 
 https://github.com/Lochverstaerker/screenr
 
-Usage: screenr [options]
+Usage: screenr [options] [additional options]
 
-screenr is a utility that takes screenshots using maim (+ slop)
-and then opens a rofi-driven interactive menu to let the user decide what to do with the screenshot.
+screenr is a utility that takes a screenshot using maim (+ slop) or scrot
+and then opens a rofi-driven interactive menu to let the user decide what to do with it.
 
     -h, --help                      Show this information and exit
     -V, --version                   Show version information and exit
@@ -31,8 +31,11 @@ Options
         --upload UPLOADER           Skip the interactive menu and upload directly
                                         to UPLOADER (imgur or dropbox).
         --save                      Skip the interactive menu and save directly.
+        --scrot                     Take screenshot using scrot instead of maim (+ slop).
+                                        Generally not recommended.
 Additional Options
-        (Almost) all the maim (+ slop) Options, see maim --help or man maim for help
+        (Almost) all the maim (+ slop) or alternatively scrot Options.
+        See maim --help or man maim or alternatively scrot -h or man scrot for help
 
 Examples
     $ # Screenshot a selection and open interactive menu
@@ -41,9 +44,9 @@ Examples
     $ # Screenshot the screen and save it, without opening interactive menu
     $ screenr --save
 
-    $ # Screenshot currently active window and upload it to imgur,
-    $ # without opening interactive menu
-    $ screenr -i \$(xdotool getactivewindow) --upload imgur
+    $ # Screenshot currently active window using scrot
+    $ # and upload it to imgur without opening interactive menu
+    $ screenr --scrot --upload imgur -u
 EOF
 }
 
@@ -136,17 +139,21 @@ function take_screenshot {
     if [[ $selection_mode == "1" ]]; then
         notify-send -t 1 -u low "Entered Screenshot Selection Mode"
     fi
-    maim "$@" "$full_path" 2> /tmp/screenr/maim_err
-    if [[ $(grep "Canceled selection" < /tmp/screenr/maim_err) ]]; then
-        notify-send -t 1 -u low "Canceled"
-        cleanup
-        exit 0
-    fi
-    if [[ $(grep "invalid" < /tmp/screenr/maim_err) ]]; then
-        cat /tmp/screenr/maim_err >&2
-        echo "Maim encountered an error. Aborting" >&2
-        cleanup
-        exit 1
+    if [[ $scrot_flag == "1" ]]; then
+        scrot "$@" "$full_path" #scrot takes a screenshot, even if errors are encountered
+    else
+        maim "$@" "$full_path" 2> /tmp/screenr/maim_err
+        if [[ $(grep "Canceled selection" < /tmp/screenr/maim_err) ]]; then
+            notify-send -t 1 -u low "Canceled"
+            cleanup
+            exit 0
+        fi
+        if [[ $(grep "invalid" < /tmp/screenr/maim_err) ]]; then
+            cat /tmp/screenr/maim_err >&2
+            echo "Maim encountered an error. Aborting" >&2
+            cleanup
+            exit 1
+        fi
     fi
 }
 
@@ -204,18 +211,51 @@ function menu {
 # Checks for certain flags that are handled by the script itself and not by maim
 while test $# -gt 0; do
     case "$1" in
-        -h|--help)
+        --scrot)
+            scrot_flag=1
+            shift
+            ;;
+        -h) #maim may actually use the -h flag to set parameters
+            if [[ $scrot_flag == "1" ]]; then
+                usage
+                exit 0
+            else
+                break
+            fi
+            ;;
+        --help)
             usage
             exit 0
             ;;
+        -v) # failsafe for future maim versions that may use the -v flag
+            if [[ $scrot_flag == "1" ]]; then
+                echo "screenr v1.0"
+                echo "https://github.com/Lochverstaerker/screenr"
+                exit 0
+            else
+                break
+            fi
+            ;;
         -V|--version)
-            echo "screenr v1.0"
+            echo "screenr v1.1"
             echo "https://github.com/Lochverstaerker/screenr"
             exit 0
             ;;
         --format)
-            echo "$1 is unsupported. Please choose your format in screenr's config file. Skipping" >&2
-            shift
+            if [[ $scrot_flag == "1" ]]; then
+                break
+            else
+                echo "$1 is unsupported. Please choose your format in screenr's config file. Skipping" >&2
+                shift
+            fi
+            ;;
+        -t|--thumb)
+            if [[ $scrot_flag == "1" ]]; then
+                echo "$1 is currently unsupported. Aborting" >&2
+                exit 1
+            else
+                break
+            fi
             ;;
         --upload)
             shift
@@ -238,9 +278,11 @@ while test $# -gt 0; do
             ;;
     esac
 done
+
 mkdir "/tmp/screenr" #directory where temporary files will be created; removed at the end of the script during cleanup
 image_name=$(date "$date_format")."$img_format" #Name of the image file
 full_path=/tmp/screenr/"$image_name" #Full path to the image file
+
 # If -s|--select flag is passed, this sets a flag that is used to
 # notify the user that Screenshot Selection Mode has been entered
 # and to add the option to "Retake" a screenshot
@@ -248,6 +290,7 @@ if [[ $(echo "$@ " | grep -e '-s \|--select') ]]; then
     selection_mode=1
 fi
 take_screenshot "$@"
+
 # Acts on specified flags and if none were passed it goes to menu to let user decide manually
 if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
     if [[ $save_flag == "1" ]]; then
@@ -270,14 +313,18 @@ else
     fi
     menu "$@"
 fi
-#If the image was uploaded, this copies the url into xsel or xclip
+
+#If the image was uploaded and clipping is enabled,
+#this copies the url into xsel or xclip
 if [ -e /tmp/screenr/tmp_url -a "$clipping" -ne 0 ];then
     { type xsel >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xsel -i; } \
         || { type xclip >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xclip -i; } \
         || echo "Can't copy into clipboard: no xsel or xclip" >&2
 fi
+
 #If a screenshot was taken and
 #logging is enabled this appends the necessary information to the log_file
+#and outputs it to STDOUT and STDERR
 #If not information is only output to STDOUT and STDERR
 if [[ ! -z "$url_name" ]]; then
     if [[ "$logging" -ne 0 ]]; then
@@ -294,5 +341,6 @@ if [[ ! -z "$url_name" ]]; then
         fi
     fi
 fi
+
 cleanup
 exit 0
