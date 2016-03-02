@@ -1,7 +1,7 @@
 # screenr
 bash script to improve the taking of screenshots
 
-This script takes a screenshot using maim (+ slop) and then asks the user what to do with it using rofi  
+This script takes a screenshot using maim (+ slop) or alternatively scrot and then asks the user what to do with it using rofi  
 Available options are "Save", "Upload" (to imgur and dropbox), "Edit", "Save & Upload" and "View"
 
 
@@ -28,17 +28,17 @@ Discards the image and all changes made to it
 
 
 ##You will need
-* ```maim``` (https://github.com/naelstrof/maim)
-* ```rofi``` (https://github.com/DaveDavenport/rofi)
+* `maim` (https://github.com/naelstrof/maim) or alternatively `scrot` (I highly recommend `maim`)
+* `rofi` (https://github.com/DaveDavenport/rofi)
 
 For full functionality:
-* ```slop``` (https://github.com/naelstrof/slop)
-* ```imgur``` (https://imgur.com/tools/imgurbash.sh)  
+* `slop` (https://github.com/naelstrof/slop) when using maim (required to use `$ maim -s`)
+* `imgur` (https://imgur.com/tools/imgurbash.sh) to upload images to imgur 
 also available in the AUR (https://aur.archlinux.org/packages/imgur/)
-* ```dropbox-cli``` (https://linux.dropbox.com/packages/dropbox.py)  
+* `xsel` or `xclip` to copy URLs of uploads into clipboard
+* `dropbox-cli` (https://linux.dropbox.com/packages/dropbox.py) to automatically open images uploaded to dropbox in web browser and copy their URLs into clipboard
 also available in the AUR (https://aur.archlinux.org/packages/dropbox-cli/)
-* ```xsel``` or ```xclip```
-* a notification server, for example ```dunst```
+* a notification server, for example `dunst` to display useful information
 
 
 ##Configuration
@@ -53,6 +53,6 @@ $ git clone git://github.com/Lochverstaerker/screenr
 $ cd screenr  
 $ sudo make install  
 ```
-Check ```$ screenr --help``` for additional help on how to use screenr  
+Check `$ screenr --help` for additional help on how to use screenr  
 <br>
-To uninstall, run ```$ sudo make uninstall``` inside the screenr directory and remove the config file created in _~/.config/screenr/config_
+To uninstall, run `$ sudo make uninstall` inside the screenr directory and remove the config file created in _~/.config/screenr/config_
