@@ -144,6 +144,7 @@ function take_screenshot {
     if [[ $(grep "invalid" < /tmp/screenr/maim_err) ]]; then
         cat /tmp/screenr/maim_err >&2
         echo "Maim encountered an error. Aborting" >&2
+        cleanup
         exit 1
     fi
 }
