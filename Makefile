@@ -10,4 +10,4 @@ install:
 
 uninstall:
 		rm -f $(DESTDIR)$(PREFIX)/bin/screenr
-		rm -rf config.example $(DESTDIR)$(PREFIX)/share/doc/screenr/
+		rm -rf $(DESTDIR)$(PREFIX)/share/doc/screenr/
