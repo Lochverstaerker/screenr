@@ -46,9 +46,9 @@ img_format="png"
 # 0 is off, anything else is on
 logging=0
 
-# Whether or not URLs of upload get copies into the clipboard
+# Whether or not URLs of upload get copied into the clipboard
 # 0 is off, anything else is on
-# Requires xsel or sclip
+# Requires xsel or xclip
 clipping=1
 
 # Whether or not to wait until a file is synced before opening it
@@ -56,7 +56,7 @@ clipping=1
 # 0 is off, anything else is on
 db_waiting=1
 
-# Frequency at which to check if file is already snyced, when using db_waiting
+# Frequency at which to check if file is already snyced when using db_waiting
 # Low values require (slightly) more CPU usage, but usually perform better
 # If you use too much CPU with this script, disable db_waiting or increase check_interval
 check_interval=0.1
