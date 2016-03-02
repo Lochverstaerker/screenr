@@ -25,7 +25,7 @@ Usage: screenr [options] [additional options]
 screenr is a utility that takes a screenshot using maim (+ slop) or scrot
 and then opens a rofi-driven interactive menu to let the user decide what to do with it.
 
-    --help                      Show this information and exit
+    -H, --help                      Show this information and exit
     -V, --version                   Show version information and exit
 Options
         --upload UPLOADER           Skip the interactive menu and upload directly
@@ -35,7 +35,7 @@ Options
                                         Generally not recommended.
 Additional Options
         (Almost) all the maim (+ slop) or alternatively scrot Options.
-        See maim --help or man maim or alternatively scrot -h or man scrot for help
+        See maim --help or man maim or alternatively scrot -h or man scrot for help.
 
 Examples
     $ # Screenshot a selection and open interactive menu
@@ -155,7 +155,7 @@ function take_screenshot {
             cleanup
             exit 0
         fi
-        if [[ $(grep "invalid" < /tmp/screenr/maim_err) ]]; then
+        if [[ $(grep -E "invalid|unrecognized" < /tmp/screenr/maim_err) ]]; then
             cat /tmp/screenr/maim_err >&2
             echo "Maim encountered an error. Aborting" >&2
             cleanup
@@ -222,41 +222,11 @@ while test $# -gt 0; do
             scrot_flag=1
             shift
             ;;
-        -h) #maim may actually use the -h flag to set parameters
-            if [[ $scrot_flag == "1" ]]; then
-                usage
-            else
-                break
-            fi
-            ;;
-        --help)
+        -H|--help)
             usage
-            ;;
-        -v) # failsafe for future maim versions that may use the -v flag
-            if [[ $scrot_flag == "1" ]]; then
-                version
-            else
-                break
-            fi
             ;;
         -V|--version)
             version
-            ;;
-        --format)
-            if [[ $scrot_flag == "1" ]]; then
-                break
-            else
-                echo "$1 is unsupported. Please choose your format in screenr's config file. Skipping" >&2
-                shift
-            fi
-            ;;
-        -t|--thumb)
-            if [[ $scrot_flag == "1" ]]; then
-                echo "$1 is currently unsupported. Aborting" >&2
-                exit 1
-            else
-                break
-            fi
             ;;
         --upload)
             shift
@@ -273,6 +243,18 @@ while test $# -gt 0; do
         --save)
             save_flag=1
             shift
+            ;;
+        --format|-t|--thumb) #catch some flags that won't work in maim/scrot
+            if [[ $1 == "--format" && $scrot_flag != "1" ]]; then
+                echo "$1 is currently unsupported." >&2
+                echo "Please choose your format in screenr's config file. Aborting" >&2
+                exit 1
+            elif [[ $1 != "--format" && $scrot_flag == "1" ]]; then
+                echo "$1 is currently unsupported. Aborting" >&2
+                exit 1
+            else
+                break
+            fi
             ;;
         *)
             break
@@ -303,7 +285,8 @@ if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
         elif [[ $upload_flag == "dropbox" ]]; then
             dropbox_upload
         else
-            echo "Unsupported/unknown uploader $upload_flag. Skipping upload" >&2
+            echo "Unsupported/unknown uploader $upload_flag. Aborting" >&2
+            exit 1
         fi
     fi
 else
