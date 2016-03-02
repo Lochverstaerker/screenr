@@ -41,7 +41,8 @@ Examples
     $ # Screenshot the screen and save it, without opening interactive menu
     $ screenr --save
 
-    $ # Screenshot currently active window and upload it to imgur
+    $ # Screenshot currently active window and upload it to imgur,
+    $ # without opening interactive window
     $ screenr -i \$(xdotool getactivewindow) --upload imgur
 EOF
 }
