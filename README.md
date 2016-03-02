@@ -33,8 +33,10 @@ Discards the image and all changes made to it
 
 For full functionality:
 * ```slop``` (https://github.com/naelstrof/slop)
-* ```imgur``` (https://imgur.com/tools/imgurbash.sh), also available in the AUR (https://aur.archlinux.org/packages/imgur/)
-* ```dropbox-cli``` (https://linux.dropbox.com/packages/dropbox.py), also available in the AUR (https://aur.archlinux.org/packages/dropbox-cli/)
+* ```imgur``` (https://imgur.com/tools/imgurbash.sh)  
+also available in the AUR (https://aur.archlinux.org/packages/imgur/)
+* ```dropbox-cli``` (https://linux.dropbox.com/packages/dropbox.py)  
+also available in the AUR (https://aur.archlinux.org/packages/dropbox-cli/)
 * ```xsel``` or ```xclip```
 * a notification server, for example ```dunst```
 
