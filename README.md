@@ -47,7 +47,7 @@ If the path does not exist an example config will be created there after running
 
 
 ##How to use
-To install screenr from source, run the following:  
+To install screenr, run the following:  
 ```
 $ git clone git://github.com/Lochverstaerker/screenr  
 $ cd screenr  
