@@ -25,7 +25,7 @@ Usage: screenr [options] [additional options]
 screenr is a utility that takes a screenshot using maim (+ slop) or scrot
 and then opens a rofi-driven interactive menu to let the user decide what to do with it.
 
-    -h, --help                      Show this information and exit
+    --help                      Show this information and exit
     -V, --version                   Show version information and exit
 Options
         --upload UPLOADER           Skip the interactive menu and upload directly
@@ -48,8 +48,15 @@ Examples
     $ # and upload it to imgur without opening interactive menu
     $ screenr --scrot --upload imgur -u
 EOF
+exit 0
 }
 
+
+function version {
+        echo "screenr - v1.1"
+        echo "https://github.com/Lochverstaerker/screenr"
+        exit 0
+}
 # Cleans up all the temporary files created during this script
 function cleanup {
     shred -u /tmp/screenr/*
@@ -218,28 +225,22 @@ while test $# -gt 0; do
         -h) #maim may actually use the -h flag to set parameters
             if [[ $scrot_flag == "1" ]]; then
                 usage
-                exit 0
             else
                 break
             fi
             ;;
         --help)
             usage
-            exit 0
             ;;
         -v) # failsafe for future maim versions that may use the -v flag
             if [[ $scrot_flag == "1" ]]; then
-                echo "screenr v1.0"
-                echo "https://github.com/Lochverstaerker/screenr"
-                exit 0
+                version
             else
                 break
             fi
             ;;
         -V|--version)
-            echo "screenr v1.1"
-            echo "https://github.com/Lochverstaerker/screenr"
-            exit 0
+            version
             ;;
         --format)
             if [[ $scrot_flag == "1" ]]; then
