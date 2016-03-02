@@ -42,7 +42,7 @@ Examples
     $ screenr --save
 
     $ # Screenshot currently active window and upload it to imgur,
-    $ # without opening interactive window
+    $ # without opening interactive menu
     $ screenr -i \$(xdotool getactivewindow) --upload imgur
 EOF
 }
