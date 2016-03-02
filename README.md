@@ -45,5 +45,12 @@ If the path does not exist an example config will be created there after running
 
 
 ##How to use
-Download this repository and run ```sudo make -f Makefile```  
-Check ```screenr --help``` for additional help
+To install screenr from source, run the following:  
+```
+git clone git://github.com/Lochverstaerker/screenr  
+cd screenr  
+sudo make install  
+```
+Check ```screenr --help``` for additional help on how to use screenr  
+<br>
+To uninstall, run ```sudo make uninstall``` inside the screenr directory and remove the config file created in _~/.config/screenr/config_
