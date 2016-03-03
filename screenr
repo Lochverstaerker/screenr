@@ -52,7 +52,7 @@ exit 0
 }
 
 function version {
-        echo "screenr - v1.1"
+        echo "screenr - v1.2"
         echo "https://github.com/Lochverstaerker/screenr"
         exit 0
 }
