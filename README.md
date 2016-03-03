@@ -7,7 +7,7 @@ Available options are "Save", "Upload" (to imgur and dropbox), "Edit", "Save & U
 
 ##Features
 After taking a screenshot, the user will be prompted by an interactive menu
-![example screenshot of menu](http://i.imgur.com/fotWDgd.jpg)
+![example screenshot of menu](https://raw.githubusercontent.com/Lochverstaerker/screenr/master/screenshot.png)
 * *Save*  
 Saves image to a pre-defined directory
 
