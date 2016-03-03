@@ -44,21 +44,22 @@ Additional Options
         See maim --help or man maim or alternatively scrot -h or man scrot for help.
 
 Examples
-    $ # Screenshot a selection and open interactive menu
+    $ # Capture a selection and open interactive menu
     $ screenr -s
 
-    $ # Screenshot the screen and save it, without opening interactive menu
-    $ screenr --save
+    $ # Capture the screen and save it in ~/Pictures/my_screenshot.png,
+    $ # without opening interactive menu
+    $ screenr --save --directory ~/Pictures --name my_screenshot.png
 
-    $ # Screenshot currently active window using scrot
-    $ # and upload it to imgur without opening interactive menu
-    $ screenr --scrot --upload imgur -u
+    $ # Capture currently active window using scrot;
+    $ # save and upload it to imgur without opening interactive menu
+    $ screenr --scrot --save --upload imgur -u
 EOF
 exit 0
 }
 
 function version {
-        echo "screenr - v1.3"
+        echo "screenr - v1.3.1"
         echo "https://github.com/Lochverstaerker/screenr"
         exit 0
 }
@@ -94,8 +95,8 @@ function log_upload {
 function save {
     if [[ -d "$image_dir" ]]; then
         cp "$full_path" "$image_dir"
-        echo "Image saved: $image_name"
-        notify-send -u normal "Image saved" "$image_name"
+        echo "Image saved in $image_dir: $image_name"
+        notify-send -u normal "Image saved: $image_name"
     else
         printf "$image_dir is not a directory. Can't save.\n" >&2
     fi
@@ -145,8 +146,9 @@ function dropbox_upload {
                     sleep "$check_interval"
                 done
                 if [[ "$inform_when_synced" == "terminal" || "$inform_when_synced" == "both" ]]; then
-                    echo -e "$image_name is synced\n$url_name"
-                elif [[ "$inform_when_synced" == "notify" || "$inform_when_synced" == "both" ]]; then
+                    echo -e "$image_name is synced"
+                fi
+                if [[ "$inform_when_synced" == "notify" || "$inform_when_synced" == "both" ]]; then
                     notify-send -u normal "$image_name is synced" "$url_name"
                 fi
             fi

@@ -67,11 +67,12 @@ check_interval=0.1
 # Available options are "terminal", "notify" and "both"; anything else is off
 inform_when_synced=terminal
 
+
 ## rofi options
 
 # Usually you would set rofi options in ~/.Xresources
 # If you haven't done that already, do it
 # Check possible options using "rofi -dump-xresources"
 # If you, however, want to override these global options for this script only,
-# do it here:
-# rofi_options="-bw 0 -hide-scrollbar -padding 14 -lines 7"
+# do it here (otherwise, comment this line):
+rofi_options="-bw 0 -hide-scrollbar -padding 14 -width 25 -lines 7"
