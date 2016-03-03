@@ -41,7 +41,7 @@ Options
                                         instead of the one specified in the config.
 Additional Options
         (Almost) all the maim (+ slop) or alternatively scrot options.
-        See maim --help or man maim or alternatively scrot -h or man scrot for help.
+        See "maim --help" or "man maim" or alternatively "scrot -h" or "man scrot" for help.
 
 Examples
     $ # Capture a selection and open interactive menu
