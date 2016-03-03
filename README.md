@@ -33,11 +33,11 @@ Discards the image and all changes made to it
 
 For full functionality:
 * `slop` (https://github.com/naelstrof/slop) when using maim (required to use `$ maim -s`)
-* `imgur` (https://imgur.com/tools/imgurbash.sh) to upload images to imgur 
-also available in the AUR (https://aur.archlinux.org/packages/imgur/)
+* `imgur` (https://imgur.com/tools/imgurbash.sh) to upload images to imgur   
+  * also available in the AUR (https://aur.archlinux.org/packages/imgur/)
 * `xsel` or `xclip` to copy URLs of uploads into clipboard
-* `dropbox-cli` (https://linux.dropbox.com/packages/dropbox.py) to automatically open images uploaded to dropbox in web browser and copy their URLs into clipboard
-also available in the AUR (https://aur.archlinux.org/packages/dropbox-cli/)
+* `dropbox-cli` (https://linux.dropbox.com/packages/dropbox.py) to automatically open images uploaded to dropbox in web browser and copy their URLs into clipboard  
+  * also available in the AUR (https://aur.archlinux.org/packages/dropbox-cli/)
 * a notification server, for example `dunst` to display useful information
 
 
