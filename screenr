@@ -123,7 +123,7 @@ if [[ -z "$rofi_options" ]]; then
     }
 else
     function rofi_cmd {
-        rofi -dmenu $(echo "$rofiopts") "$@"
+        rofi -dmenu $(echo "$rofi_options") "$@"
     }
 fi
 

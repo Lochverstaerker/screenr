@@ -68,4 +68,4 @@ check_interval=0.1
 # Check possible options using "rofi -dump-xresources"
 # If you, however, want to override these global options for this script only,
 # do it here:
-# rofiopts="-bw 0 -hide-scrollbar -padding 14 -lines 7"
+# rofi_options="-bw 0 -hide-scrollbar -padding 14 -lines 7"
