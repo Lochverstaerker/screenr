@@ -53,6 +53,10 @@ $ git clone git://github.com/Lochverstaerker/screenr
 $ cd screenr  
 $ sudo make install  
 ```
-Check `$ screenr --help` for additional help on how to use screenr  
+Check  
+`$ screenr --help`  
+for additional help on how to use screenr    
 <br>
-To uninstall, run `$ sudo make uninstall` inside the screenr directory and remove the config file created in _~/.config/screenr/config_
+To uninstall, run   
+`$ sudo make uninstall`  
+inside the screenr directory and remove the config file created in _~/.config/screenr/config_
