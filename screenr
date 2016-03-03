@@ -302,6 +302,11 @@ while test $# -gt 0; do
                 exit 1
             elif test $# -gt 0; then
                 upload_flag="$1"
+                # Check if upload_flag is supported
+                if [[ $upload_flag != "imgur" && $upload_flag != "dropbox" ]]; then
+                    echo "Unsupported/Unknown uploader $upload_flag. Aborting" >&2
+                    exit 1
+                fi
             else
                 echo "No uploader specified. Aborting" >&2
                 exit 1
@@ -383,11 +388,8 @@ if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
     if [[ ! -z "$upload_flag" ]]; then
         if [[ $upload_flag == "imgur" ]]; then
             imgur_upload
-        elif [[ $upload_flag == "dropbox" ]]; then
-            dropbox_upload
         else
-            echo "Unsupported/Unknown uploader $upload_flag. Aborting" >&2
-            exit 1
+            dropbox_upload
         fi
     fi
 else
