@@ -20,6 +20,8 @@ screenr - a rofi-driven screenshot tool
 
 https://github.com/Lochverstaerker/screenr
 
+Configuration: ~/.config/screenr/config
+
 Usage: screenr [options] [additional options]
 
 screenr is a utility that takes a screenshot using maim (+ slop) or scrot
@@ -67,6 +69,27 @@ function cleanup {
     rm -r /tmp/screenr
 }
 
+#If a screenshot was taken and
+#logging is enabled this appends the necessary information to the log_file
+#and outputs it to STDOUT and STDERR
+#If not, information is only output to STDOUT and STDERR
+function log_upload {
+    if [[ ! -z "$url_name" ]]; then
+        if [[ "$logging" -ne 0 ]]; then
+            echo $(date "$date_format") >> "$log_file"
+            echo "$url_name" | tee -a "$log_file"
+            if [[ -e /tmp/screenr/tmp_url_del ]]; then
+                tee -a "$log_file" >&2 < /tmp/screenr/tmp_url_del
+            fi
+        else
+            echo "$url_name"
+            if [[ -e /tmp/screenr/tmp_url_del ]]; then
+                cat /tmp/screenr/tmp_url_del >&2
+            fi
+        fi
+    fi
+}
+
 # Saves the screenshot to the image directory of the user
 function save {
     if [[ -d "$image_dir" ]]; then
@@ -74,7 +97,7 @@ function save {
         echo "Image saved: $image_name"
         notify-send -u normal "Image saved" "$image_name"
     else
-        echo "$image_dir is not a directory. Can't save." >&2
+        printf "$image_dir is not a directory. Can't save.\n" >&2
     fi
 }
 
@@ -106,24 +129,33 @@ function imgur_upload {
 # Copies the screenshot into the user's dropbox directory, if dropbox-cli is installed there is added (optional) functionality:
 # Tries to get puburl and if that is not possible gets sharelink, then (optionally) copies that into clipboard and opens it in web browser
 function dropbox_upload {
-    cp "$full_path" "$db_dir"
-    printf "$db_dir/" >> "/tmp/screenr/db_path"; printf "$image_name" >> "/tmp/screenr/db_path"
-    db_path=$(</tmp/screenr/db_path)
-    notify-send -u normal "Image copied into dropbox" "$image_name"
-    if hash dropbox-cli 2>/dev/null; then
-        dropbox-cli puburl "$db_path" > /tmp/screenr/tmp_url
-        if [[ $(grep "Error" < /tmp/screenr/tmp_url) ]]; then
-            dropbox-cli sharelink "$db_path" > /tmp/screenr/tmp_url
+    if [[ -d "$db_dir" ]]; then
+        cp "$full_path" "$db_dir"
+        printf "$db_dir/" >> "/tmp/screenr/db_path"; printf "$image_name" >> "/tmp/screenr/db_path"
+        db_path=$(</tmp/screenr/db_path)
+        notify-send -u normal "Image copied into Dropbox" "$image_name"
+        if hash dropbox-cli 2>/dev/null; then
+            dropbox-cli puburl "$db_path" > /tmp/screenr/tmp_url
+            if [[ $(grep "Error" < /tmp/screenr/tmp_url) ]]; then
+                dropbox-cli sharelink "$db_path" > /tmp/screenr/tmp_url
+            fi
+            url_name=$(</tmp/screenr/tmp_url)
+            if [[ "$db_waiting" -ne 0 ]]; then
+                while [[ $(dropbox-cli filestatus "$db_path" | grep "syncing") ]]; do
+                    sleep "$check_interval"
+                done
+                if [[ "$inform_when_synced" == "terminal" || "$inform_when_synced" == "both" ]]; then
+                    echo -e "$image_name is synced\n$url_name"
+                elif [[ "$inform_when_synced" == "notify" || "$inform_when_synced" == "both" ]]; then
+                    notify-send -u normal "$image_name is synced" "$url_name"
+                fi
+            fi
+                open_in_browser
+        else
+            echo "Can't make use of additional Dropbox related functionality, because the necessary script can't be found." >&2
         fi
-        url_name=$(</tmp/screenr/tmp_url)
-        if [[ "$db_waiting" -ne 0 ]]; then
-            while [[ $(dropbox-cli filestatus "$db_path" | grep "syncing") ]]; do
-                sleep "$check_interval"
-            done
-        fi
-            open_in_browser
     else
-        echo "Can't make use of additional dropbox related functionality, because the necessary script can't be found." >&2
+        printf "$db_dir is not a directory. Can't upload to Dropbox.\n" >&2
     fi
 }
 
@@ -367,31 +399,13 @@ fi
 
 #If the image was uploaded and clipping is enabled,
 #this copies the url into xsel or xclip
+#Only clips latest URL (obviously)
 if [ -e /tmp/screenr/tmp_url -a "$clipping" -ne 0 ];then
     { type xsel >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xsel -i; } \
         || { type xclip >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xclip -i; } \
         || echo "Can't copy into clipboard: no xsel or xclip" >&2
 fi
 
-#If a screenshot was taken and
-#logging is enabled this appends the necessary information to the log_file
-#and outputs it to STDOUT and STDERR
-#If not, information is only output to STDOUT and STDERR
-if [[ ! -z "$url_name" ]]; then
-    if [[ "$logging" -ne 0 ]]; then
-        echo $(date "$date_format") >> "$log_file"
-        echo "$url_name" | tee -a "$log_file"
-        if [[ -e /tmp/screenr/tmp_url_del ]]; then
-            tee -a "$log_file" >&2 < /tmp/screenr/tmp_url_del
-        fi
-        echo >> "$log_file"
-    else
-        echo "$url_name"
-        if [[ -e /tmp/screenr/tmp_url_del ]]; then
-            cat /tmp/screenr/tmp_url_del >&2
-        fi
-    fi
-fi
-
+log_upload
 cleanup
 exit 0

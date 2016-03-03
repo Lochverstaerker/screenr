@@ -32,7 +32,8 @@ img_view="feh -F"
 
 # Formatting of the date used in image name when saved
 # Should be precise enough to be unique
-# man date for help on FORMAT
+# "man date" for help on FORMAT
+# Also used in log_file
 date_format="+%F-%T"
 
 # Image format
@@ -61,6 +62,10 @@ db_waiting=1
 # If you use too much CPU with this script, disable db_waiting or increase check_interval
 check_interval=0.1
 
+# Whether or not to inform the user when a file copied into dropbox finished syncing
+# Requires db_waiting to be on
+# Available options are "terminal", "notify" and "both"; anything else is off
+inform_when_synced=terminal
 
 ## rofi options
 
