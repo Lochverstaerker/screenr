@@ -33,6 +33,10 @@ Options
         --save                      Skip the interactive menu and save directly.
         --scrot                     Take screenshot using scrot instead of maim (+ slop).
                                         Generally not recommended.
+        --directory DIRECTORY       Save image to DIRECTORY
+                                        instead of the one specified in the config.
+        --name NAME                 Save image as NAME
+                                        instead of the one specified in the config.
 Additional Options
         (Almost) all the maim (+ slop) or alternatively scrot options.
         See maim --help or man maim or alternatively scrot -h or man scrot for help.
@@ -56,6 +60,7 @@ function version {
         echo "https://github.com/Lochverstaerker/screenr"
         exit 0
 }
+
 # Cleans up all the temporary files created during this script
 function cleanup {
     shred -u /tmp/screenr/*
@@ -64,8 +69,13 @@ function cleanup {
 
 # Saves the screenshot to the image directory of the user
 function save {
-    cp "$full_path" "$image_dir"
-    notify-send -u normal "Image saved" "$image_name"
+    if [[ -d "$image_dir" ]]; then
+        cp "$full_path" "$image_dir"
+        echo "Image saved: $image_name"
+        notify-send -u normal "Image saved" "$image_name"
+    else
+        echo "$image_dir is not a directory. Can't save." >&2
+    fi
 }
 
 # Must be called (immediately) after setting "$url_name";
@@ -89,7 +99,7 @@ function imgur_upload {
         notify-send -u normal "Image uploaded" "$url_name"
         open_in_browser
     else
-        echo "Can't upload to imgur, because the necessary script can't be found" >&2
+        echo "Can't upload to imgur, because the necessary script can't be found." >&2
     fi
 }
 
@@ -113,7 +123,7 @@ function dropbox_upload {
         fi
             open_in_browser
     else
-        echo "Can't make use of additional dropbox related functionality, because the necessary script can't be found" >&2
+        echo "Can't make use of additional dropbox related functionality, because the necessary script can't be found." >&2
     fi
 }
 
@@ -156,7 +166,16 @@ function take_screenshot {
         notify-send -t 1 -u low "Entered Screenshot Selection Mode"
     fi
     if [[ $scrot_flag == "1" ]]; then
-        scrot "$@" "$full_path" #scrot takes a screenshot, even if errors are encountered
+        scrot "$@" "$full_path" 2> /tmp/screenr/scrot_err # scrot takes screenshot even when unrecognized flags are passed
+        if [[ $(grep "giblib error" < /tmp/screenr/scrot_err) ]]; then # not when 'giblib error' is encountered
+            if [[ $selection_mode == "1" ]]; then
+                notify-send -t 1 -u low "Aborted"
+            fi
+            cat /tmp/screenr/scrot_err >&2
+            echo "Scrot encountered an error. Aborting" >&2
+            cleanup
+            exit 1
+        fi
     else
         maim "$@" "$full_path" 2> /tmp/screenr/maim_err
         if [[ $(grep "Canceled selection" < /tmp/screenr/maim_err) ]]; then
@@ -164,9 +183,12 @@ function take_screenshot {
             cleanup
             exit 0
         fi
-        if [[ $(grep -E "invalid|unrecognized" < /tmp/screenr/maim_err) ]]; then
+        if [[ -s /tmp/screenr/maim_err ]]; then
+            if [[ $selection_mode == "1" ]]; then
+                notify-send -t 1 -u low "Aborted"
+            fi
             cat /tmp/screenr/maim_err >&2
-            echo "Maim encountered an error. Aborting" >&2
+            echo -e "\nMaim encountered an error. Aborting" >&2
             cleanup
             exit 1
         fi
@@ -224,6 +246,8 @@ function menu {
     fi
 }
 
+image_name=$(date "$date_format")."$img_format" #Name of the image file
+
 # Checks for certain flags that are handled by the script itself and not by maim
 while test $# -gt 0; do
     case "$1" in
@@ -240,7 +264,8 @@ while test $# -gt 0; do
         --upload)
             shift
             if [[ ! -z "$upload_flag" ]]; then
-                echo "Specifying multiple uploaders in 1 command is currently unsupported. Ignoring $1" >&2
+                echo "Specifying multiple uploaders in 1 command is currently unsupported. Aborting" >&2
+                exit 1
             elif test $# -gt 0; then
                 upload_flag="$1"
             else
@@ -253,6 +278,34 @@ while test $# -gt 0; do
             save_flag=1
             shift
             ;;
+        --directory)
+            if [[ ! -z "$directory_flag" ]]; then
+                echo "Specifying multiple directories in 1 command is currently unsupported. Aborting" >&2
+                exit 1
+            elif test $# -gt 0; then
+                directory_flag=1
+                shift
+                image_dir="$1"
+            else
+                echo "No directory specified. Aborting" >&2
+                exit 1
+            fi
+            shift
+            ;;
+        --name)
+            if [[ ! -z "$name_flag" ]]; then
+                echo "Specifying multiple names is unsupported. Aborting" >&2
+                exit 1
+            elif test $# -gt 0; then
+                name_flag=1
+                shift
+                image_name="$1"
+            else
+                echo "No name specified. Aborting" >&2
+                exit 1
+            fi
+            shift
+            ;;
         *)
             break
             ;;
@@ -260,10 +313,8 @@ while test $# -gt 0; do
 done
 
 # Act on some flags that won't work with maim/scrot
-if [[ $(echo "$@" | grep -E -e "--format") && $scrot_flag != "1" ]]; then
-    echo "--format is currently unsupported." >&2
-    echo "Please choose your format in screenr's config file. Aborting" >&2
-    exit 1
+if [[ $(echo "$@" | grep -E -e "--format") && $scrot_flag != "1" && $name_flag != "1" ]]; then
+    printf "--format will be overwritten by the setting in screenr's config ($img_format)\n" >&2
 elif [[ $(echo "$@" | grep -E -e"--thumb|-t") && $scrot_flag == "1" ]]; then
     echo "-t|--thumb is currently unsupported. Aborting" >&2
     exit 1
@@ -279,7 +330,6 @@ if [[ $scrot_flag == "1" ]]; then
 fi
 
 mkdir "/tmp/screenr" #directory where temporary files will be created; removed at the end of the script during cleanup
-image_name=$(date "$date_format")."$img_format" #Name of the image file
 full_path=/tmp/screenr/"$image_name" #Full path to the image file
 
 # If -s|--select flag is passed, this sets a flag that is used to
@@ -302,7 +352,7 @@ if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
         elif [[ $upload_flag == "dropbox" ]]; then
             dropbox_upload
         else
-            echo "Unsupported/unknown uploader $upload_flag. Aborting" >&2
+            echo "Unsupported/Unknown uploader $upload_flag. Aborting" >&2
             exit 1
         fi
     fi
@@ -326,7 +376,7 @@ fi
 #If a screenshot was taken and
 #logging is enabled this appends the necessary information to the log_file
 #and outputs it to STDOUT and STDERR
-#If not information is only output to STDOUT and STDERR
+#If not, information is only output to STDOUT and STDERR
 if [[ ! -z "$url_name" ]]; then
     if [[ "$logging" -ne 0 ]]; then
         echo $(date "$date_format") >> "$log_file"
