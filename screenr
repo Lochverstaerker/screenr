@@ -34,7 +34,7 @@ Options
         --scrot                     Take screenshot using scrot instead of maim (+ slop).
                                         Generally not recommended.
 Additional Options
-        (Almost) all the maim (+ slop) or alternatively scrot Options.
+        (Almost) all the maim (+ slop) or alternatively scrot options.
         See maim --help or man maim or alternatively scrot -h or man scrot for help.
 
 Examples
@@ -50,7 +50,6 @@ Examples
 EOF
 exit 0
 }
-
 
 function version {
         echo "screenr - v1.1"
@@ -94,7 +93,7 @@ function imgur_upload {
     fi
 }
 
-# Copies the screenshot into the users dropbox directory, if dropbox-cli is installed there is added (optional) functionality:
+# Copies the screenshot into the user's dropbox directory, if dropbox-cli is installed there is added (optional) functionality:
 # Tries to get puburl and if that is not possible gets sharelink, then (optionally) copies that into clipboard and opens it in web browser
 function dropbox_upload {
     cp "$full_path" "$db_dir"
@@ -118,6 +117,16 @@ function dropbox_upload {
     fi
 }
 
+if [[ -z "$rofi_options" ]]; then
+    function rofi_cmd  {
+        rofi -dmenu "$@"
+    }
+else
+    function rofi_cmd {
+        rofi -dmenu $(echo "$rofiopts") "$@"
+    }
+fi
+
 # Menu to decide about where to upload screenshot; ESC or back cancels and goes back to (the previous) menu
 # "$@" for added functionality to 'Retake' screenshots
 function upload_menu {
@@ -132,7 +141,7 @@ function upload_menu {
     fi
     if [[ $uploader == "Back" ]]; then
         unset choice
-        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi_cmd -p "Screenshot taken. What now? > ")
         menu "$@"
     fi
     if [[ $uploader == "Exit" ]]; then
@@ -173,7 +182,7 @@ function menu {
     fi
     if [[ $choice == "Upload" ]]; then
         unset uploader
-        uploader=$(echo -e "Imgur\nDropbox\nBack" | rofi -dmenu -p "Where to upload? > ")
+        uploader=$(echo -e "Imgur\nDropbox\nBack" | rofi_cmd -p "Where to upload? > ")
         uploader_="Back" #default choice
         upload_menu "$@"
     fi
@@ -184,12 +193,12 @@ function menu {
             echo "Image Manipulation Program not found" >&2
         fi
         unset choice
-        choice=$(echo -e "Save\nUpload\nSave & Upload\nView\nDiscard" | rofi -dmenu -p "Image edited. What now? > ")
+        choice=$(echo -e "Save\nUpload\nSave & Upload\nView\nDiscard" | rofi_cmd -p "Image edited. What now? > ")
         menu "$@"
     fi
     if [[ $choice == "Save & Upload" ]]; then
         save
-        uploader=$(echo -e "Imgur\nDropbox\nExit" | rofi -dmenu -p "Where to upload? > ")
+        uploader=$(echo -e "Imgur\nDropbox\nExit" | rofi_cmd -p "Where to upload? > ")
         uploader_="Exit" #default choice
         upload_menu "$@"
     fi
@@ -200,12 +209,12 @@ function menu {
             echo "Image Viewer not found" >&2
         fi
         unset choice
-        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi -dmenu -p "What now? > ")
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi_cmd -p "What now? > ")
         menu "$@"
     fi
     if [[ $choice == "Retake" ]]; then
         take_screenshot "$@"
-        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi_cmd -p "Screenshot taken. What now? > ")
         menu "$@"
     fi
     if [[ $choice == "Discard" || -z "$choice" ]]; then
@@ -291,9 +300,9 @@ if [[ ! -z "$upload_flag" || ! -z "$save_flag" ]]; then
     fi
 else
     if [[ "$selection_mode" -eq 1 ]]; then #if selection flag was passed, this displays additional option to 'Retake' screenshot
-        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nRetake\nDiscard" | rofi_cmd -p "Screenshot taken. What now? > ")
     else
-        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi -dmenu -p "Screenshot taken. What now? > ")
+        choice=$(echo -e "Save\nUpload\nEdit\nSave & Upload\nView\nDiscard" | rofi_cmd -p "Screenshot taken. What now? > ")
     fi
     menu "$@"
 fi

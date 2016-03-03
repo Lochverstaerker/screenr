@@ -60,3 +60,12 @@ db_waiting=1
 # Low values require (slightly) more CPU usage, but usually perform better
 # If you use too much CPU with this script, disable db_waiting or increase check_interval
 check_interval=0.1
+
+
+## rofi options
+# Usually you would set rofi options in ~/.Xresources
+# If you haven't done that already, do it
+# Check possible options using "rofi -dump-xresources"
+# If you, however, want to override these global options for this script only,
+# do it here:
+# rofiopts="-bw 0 -hide-scrollbar -padding 14 -lines 7"
