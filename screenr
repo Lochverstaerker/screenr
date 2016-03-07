@@ -70,10 +70,7 @@ function cleanup {
     rm -r /tmp/screenr
 }
 
-#If a screenshot was taken and
-#logging is enabled this appends the necessary information to the log_file
-#and outputs it to STDOUT and STDERR
-#If not, information is only output to STDOUT and STDERR
+# Outputs information and logs according to config
 function log_upload {
     if [[ ! -z "$url_name" ]]; then
         if [[ "$logging" -ne 0 ]]; then
@@ -114,8 +111,7 @@ function open_in_browser {
     fi
 }
 
-# If imgur is installed, this uploads the screenshot to it; otherwise an error is displayed in STDERR
-# Optionally the site is opened in a web browser
+# If imgur is installed, this uploads the screenshot to it; optionally the site is opened in a web browser
 function imgur_upload {
     if hash imgur 2>/dev/null; then
         imgur "$full_path" > /tmp/screenr/tmp_url 2> /tmp/screenr/tmp_url_del
@@ -127,8 +123,8 @@ function imgur_upload {
     fi
 }
 
-# Copies the screenshot into the user's dropbox directory, if dropbox-cli is installed there is added (optional) functionality:
-# Tries to get puburl and if that is not possible gets sharelink, then (optionally) copies that into clipboard and opens it in web browser
+# Copies the screenshot into the user's dropbox directory
+# Tries to get puburl and if that is not possible gets sharelink
 function dropbox_upload {
     if [[ -d "$db_dir" ]]; then
         cp "$full_path" "$db_dir"
@@ -137,12 +133,12 @@ function dropbox_upload {
         notify-send -u normal "Image copied into Dropbox" "$image_name"
         if hash dropbox-cli 2>/dev/null; then
             dropbox-cli puburl "$db_path" > /tmp/screenr/tmp_url
-            if [[ $(grep "Error" < /tmp/screenr/tmp_url) ]]; then
+            if [[ $(grep -q "Error" < /tmp/screenr/tmp_url) ]]; then
                 dropbox-cli sharelink "$db_path" > /tmp/screenr/tmp_url
             fi
             url_name=$(</tmp/screenr/tmp_url)
             if [[ "$db_waiting" -ne 0 ]]; then
-                while [[ $(dropbox-cli filestatus "$db_path" | grep "syncing") ]]; do
+                while [[ $(dropbox-cli filestatus "$db_path" | grep -q "syncing") ]]; do
                     sleep "$check_interval"
                 done
                 if [[ "$inform_when_synced" == "terminal" || "$inform_when_synced" == "both" ]]; then
@@ -161,6 +157,7 @@ function dropbox_upload {
     fi
 }
 
+# Applies the rofio_options from config
 if [[ -z "$rofi_options" ]]; then
     function rofi_cmd  {
         rofi -dmenu "$@"
@@ -201,7 +198,7 @@ function take_screenshot {
     fi
     if [[ $scrot_flag == "1" ]]; then
         scrot "$@" "$full_path" 2> /tmp/screenr/scrot_err # scrot takes screenshot even when unrecognized flags are passed
-        if [[ $(grep "giblib error" < /tmp/screenr/scrot_err) ]]; then # not when 'giblib error' is encountered
+        if [[ $(grep -q "giblib error" < /tmp/screenr/scrot_err) ]]; then # not when 'giblib error' is encountered
             if [[ $selection_mode == "1" ]]; then
                 notify-send -t 1 -u low "Aborted"
             fi
@@ -212,7 +209,7 @@ function take_screenshot {
         fi
     else
         maim "$@" "$full_path" 2> /tmp/screenr/maim_err
-        if [[ $(grep "Canceled selection" < /tmp/screenr/maim_err) ]]; then
+        if [[ $(grep -q "Canceled selection" < /tmp/screenr/maim_err) ]]; then
             notify-send -t 1 -u low "Canceled"
             cleanup
             exit 0
@@ -231,7 +228,6 @@ function take_screenshot {
 
 # Menu to decide what to do
 # "$@" for added functionality to 'Retake' screenshots
-# Every time a program is called, it is first checked if it exists and if not an error is directed to STDERR
 function menu {
     if [[ $choice == "Save" ]]; then
         save
@@ -352,18 +348,18 @@ while test $# -gt 0; do
 done
 
 # Act on some flags that won't work with maim/scrot
-if [[ $(echo "$@" | grep -E -e "--format") && $scrot_flag != "1" && $name_flag != "1" ]]; then
+if [[ $(echo "$@" | grep -Eqe "--format") && $scrot_flag != "1" && $name_flag != "1" ]]; then
     printf "--format will be overwritten by the setting in screenr's config ($img_format)\n" >&2
-elif [[ $(echo "$@" | grep -E -e"--thumb|-t") && $scrot_flag == "1" ]]; then
+elif [[ $(echo "$@" | grep -Eqe "--thumb|-t") && $scrot_flag == "1" ]]; then
     echo "-t|--thumb is currently unsupported. Aborting" >&2
     exit 1
 fi
 
 # Catch some scrot flags that would not work properly
 if [[ $scrot_flag == "1" ]]; then
-    if [[ $(echo "$@" | grep -E -e "-h") ]]; then
+    if [[ $(echo "$@" | grep -Eqe "-h") ]]; then
         usage
-    elif [[ $(echo "$@" | grep -E -e "-v") ]]; then
+    elif [[ $(echo "$@" | grep -Eqe "-v") ]]; then
         version
     fi
 fi
@@ -371,10 +367,8 @@ fi
 mkdir "/tmp/screenr" #directory where temporary files will be created; removed at the end of the script during cleanup
 full_path=/tmp/screenr/"$image_name" #Full path to the image file
 
-# If -s|--select flag is passed, this sets a flag that is used to
-# notify the user that Screenshot Selection Mode has been entered
-# and to add the option to "Retake" a screenshot
-if [[ $(echo "$@ " | grep -e '-s \|--select') ]]; then
+# Sets selection flag if needed 
+if [[ $(echo "$@ " | grep -qe '-s \|--select') ]]; then
     selection_mode=1
 fi
 
@@ -401,9 +395,7 @@ else
     menu "$@"
 fi
 
-#If the image was uploaded and clipping is enabled,
-#this copies the url into xsel or xclip
-#Only clips latest URL (obviously)
+# Clips URL if enabled (and possible)
 if [ -e /tmp/screenr/tmp_url -a "$clipping" -ne 0 ];then
     { type xsel >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xsel -i; } \
         || { type xclip >/dev/null 2>&1 && cat /tmp/screenr/tmp_url | head -n 1 | xclip -i; } \
