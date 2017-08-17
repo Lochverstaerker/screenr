@@ -5,14 +5,14 @@ This script takes a screenshot using maim (+ slop) or alternatively scrot and th
 Available options are "Save", "Upload" (to imgur and dropbox), "Edit", "Save & Upload" and "View"
 
 
-##Features
+## Features
 After taking a screenshot, the user will be prompted by an interactive menu
 ![example screenshot of menu](https://raw.githubusercontent.com/Lochverstaerker/screenr/master/screenshot.png)
 * *Save*  
 Saves image to a pre-defined directory
 
 * *Upload*  
-Prompts choice to upload to either imgur or dropbox and optionally copies the URL into clipboard and/or opens it in a web browser
+Prompts choice to upload to either http://0x0.st/ (or imgur or dropbox) and optionally copies the URL into clipboard and/or opens it in a web browser
 
 * *Edit*  
 Opens the image in an Image Manipulation Program and returns to the menu after done editing and closing it
@@ -27,7 +27,7 @@ Opens the image in an Image Viewer and returns to the menu after closing it
 Discards the image and all changes made to it
 
 
-##You will need
+## You will need
 * `maim` (https://github.com/naelstrof/maim) or alternatively `scrot` (I highly recommend `maim`)
 * `rofi` (https://github.com/DaveDavenport/rofi)
 
@@ -41,12 +41,12 @@ For full functionality:
 * a notification server, for example `dunst` to display useful information
 
 
-##Configuration
+## Configuration
 The script reads it's configuration from _~/.config/screenr/config_  
 If the path does not exist an example config will be created there after running the script once 
 
 
-##How to use
+## How to use
 To install screenr, run the following:  
 ```
 $ git clone git://github.com/Lochverstaerker/screenr  
