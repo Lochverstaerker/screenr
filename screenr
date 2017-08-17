@@ -59,7 +59,7 @@ exit 0
 }
 
 function version {
-        echo "screenr - v1.3.1"
+        echo "screenr - v1.3.2"
         echo "https://github.com/Lochverstaerker/screenr"
         exit 0
 }
@@ -111,6 +111,14 @@ function open_in_browser {
     fi
 }
 
+# Uploads image to http://0x0.st/ and optionally opens it in a browser 
+function 0x0_upload {
+    curl -F'file=@'$full_path'' http://0x0.st > /tmp/screenr/tmp_url
+    url_name=$(head -n 1 < /tmp/screenr/tmp_url)
+    notify-send -u normal "Image uploaded" "$url_name"
+    open_in_browser
+}
+
 # If imgur is installed, this uploads the screenshot to it; optionally the site is opened in a web browser
 function imgur_upload {
     if hash imgur 2>/dev/null; then
@@ -157,7 +165,7 @@ function dropbox_upload {
     fi
 }
 
-# Applies the rofio_options from config
+# Applies the rofi_options from config
 if [[ -z "$rofi_options" ]]; then
     function rofi_cmd  {
         rofi -dmenu "$@"
@@ -173,6 +181,9 @@ fi
 function upload_menu {
     if [[ -z "$uploader" ]]; then #if ESC is pressed variable is not initialized
         uploader="$uploader_"     #falls back to default value
+    fi
+    if [[ $uploader == "0x0" ]]; then
+        0x0_upload
     fi
     if [[ $uploader == "Imgur" ]]; then
         imgur_upload
@@ -234,7 +245,7 @@ function menu {
     fi
     if [[ $choice == "Upload" ]]; then
         unset uploader
-        uploader=$(echo -e "Imgur\nDropbox\nBack" | rofi_cmd -p "Where to upload? > ")
+        uploader=$(echo -e "0x0\nImgur\nDropbox\nBack" | rofi_cmd -p "Where to upload? > ")
         uploader_="Back" #default choice
         upload_menu "$@"
     fi
