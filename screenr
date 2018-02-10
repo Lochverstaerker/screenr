@@ -111,21 +111,6 @@ function open_in_browser {
     fi
 }
 
-#Uploads image to api.awau.moe (https://whats-th.is)
-function owo_upload {
-    upload=$(curl -s -F "files[]=@"$full_path";type=image/png" https://api.awau.moe/upload/pomf?key="$owo_key" -H "User-Agent: screenr (https://github.com/miraris/screenr)")
-    if egrep -q '"success":\s*true' <<< "${upload}"; then
-        item="$(egrep -o '"url":\s*"[^"]+"' <<<"${upload}" | cut -d "\"" -f 4)"
-        echo "https://$owo_url/$item" >> /tmp/screenr/tmp_url
-        url_name=$(head -n1 < /tmp/screenr/tmp_url)
-    else
-        notify-send -u normal "Upload to OwO failed, check config"
-    fi
-
-    notify-send -u normal "Image uploaded" "$url_name"
-    open_in_browser
-}
-
 # Uploads image to http://0x0.st/ and optionally opens it in a browser 
 function 0x0_upload {
     curl -F'file=@'$full_path'' http://0x0.st > /tmp/screenr/tmp_url
@@ -197,9 +182,6 @@ function upload_menu {
     if [[ -z "$uploader" ]]; then #if ESC is pressed variable is not initialized
         uploader="$uploader_"     #falls back to default value
     fi
-    if [[ $uploader == "OwO" ]]; then
-        owo_upload
-    fi
     if [[ $uploader == "0x0" ]]; then
         0x0_upload
     fi
@@ -263,7 +245,7 @@ function menu {
     fi
     if [[ $choice == "Upload" ]]; then
         unset uploader
-        uploader=$(echo -e "OwO\n0x0\nImgur\nDropbox\nBack" | rofi_cmd -p "Where to upload? > ")
+        uploader=$(echo -e "Imgur\n0x0\nDropbox\nBack" | rofi_cmd -p "Where to upload? > ")
         uploader_="Back" #default choice
         upload_menu "$@"
     fi
@@ -279,7 +261,7 @@ function menu {
     fi
     if [[ $choice == "Save & Upload" ]]; then
         save
-        uploader=$(echo -e "OwO\nImgur\nDropbox\nExit" | rofi_cmd -p "Where to upload? > ")
+        uploader=$(echo -e "Imgur\n0x0\nDropbox\nExit" | rofi_cmd -p "Where to upload? > ")
         uploader_="Exit" #default choice
         upload_menu "$@"
     fi

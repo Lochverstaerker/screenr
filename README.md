@@ -12,7 +12,7 @@ After taking a screenshot, the user will be prompted by an interactive menu
 Saves image to a pre-defined directory
 
 * *Upload*  
-Prompts choice to upload to either http://0x0.st/, Imgur, Dropbox (broken) or https://whats-th.is/ and optionally copies the URL into clipboard and/or opens it in a web browser
+Prompts choice to upload to either http://0x0.st/, Imgur or Dropbox (broken)  and optionally copies the URL into clipboard and/or opens it in a web browser
 
 * *Edit*  
 Opens the image in an Image Manipulation Program and returns to the menu after done editing and closing it

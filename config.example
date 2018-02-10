@@ -1,14 +1,6 @@
 ##### screenr configuration file #####
 ### https://github.com/Lochverstaerker/screenr ###
 
-## OwO host configuration
-
-# OwO API key
-owo_key=""
-
-# OwO preferred URL - https://whats-th.is/public-cdn-domains.txt
-owo_url="owo.whats-th.is"
-
 
 ## Directories
 
