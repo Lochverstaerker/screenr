@@ -12,7 +12,7 @@ After taking a screenshot, the user will be prompted by an interactive menu
 Saves image to a pre-defined directory
 
 * *Upload*  
-Prompts choice to upload to either http://0x0.st/ (or imgur or dropbox) and optionally copies the URL into clipboard and/or opens it in a web browser
+Prompts choice to upload to either http://0x0.st/, Imgur, Dropbox (broken) or https://whats-th.is/ and optionally copies the URL into clipboard and/or opens it in a web browser
 
 * *Edit*  
 Opens the image in an Image Manipulation Program and returns to the menu after done editing and closing it
@@ -33,8 +33,8 @@ Discards the image and all changes made to it
 
 For full functionality:
 * `slop` (https://github.com/naelstrof/slop) when using maim (required to use `$ maim -s`)
-* `imgur` (https://imgur.com/tools/imgurbash.sh) to upload images to imgur   
-  * also available in the AUR (https://aur.archlinux.org/packages/imgur/)
+* `imgur.sh` (https://github.com/tremby/imgur.sh) to upload images to imgur   
+  * also available in the AUR (https://aur.archlinux.org/packages/imgur.sh/)
 * `xsel` or `xclip` to copy URLs of uploads into clipboard
 * `dropbox-cli` (https://linux.dropbox.com/packages/dropbox.py) to automatically open images uploaded to dropbox in web browser and copy their URLs into clipboard  
   * also available in the AUR (https://aur.archlinux.org/packages/dropbox-cli/)
